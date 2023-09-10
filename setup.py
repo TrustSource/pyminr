@@ -27,7 +27,7 @@ setup(
     packages=[
         'pyminr'
     ],
-    version='0.1.0',
+    version='0.1.1',
     description='A Python library wrapper for the SCANOSS Mining tool]',
     author='EACG GmbH',
     license='GPL-2.0',

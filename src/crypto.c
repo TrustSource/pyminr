@@ -55,7 +55,7 @@ char *getNextToken(char *text, uint64_t *start, uint64_t *end,
  * @brief Load algorithms definitions from the auto-generated functions.
  *
  */
-API_EXPORT void load_crypto_definitions(void) {
+void load_crypto_definitions(void) {
   root = (struct T_TrieNode *)calloc(1, sizeof(struct T_TrieNode));
   load_default_crypto();
 }
@@ -64,11 +64,24 @@ API_EXPORT void load_crypto_definitions(void) {
  * @brief Free the memory allocated for the cryptographic definitions.
  *
  */
-API_EXPORT void clean_crypto_definitions(void) { cleanCrypto(root); }
+void clean_crypto_definitions(void) {
+  if (root) {
+    cleanCrypto(root);
+  }
+}
 
+/**
+ * @brief Finds crypto algorithm in the provided text.
+ *
+ */
 API_EXPORT void find_crypto_algorithms(char *src, uint64_t src_ln,
                                        void (*report_result)(char *,
                                                              unsigned short)) {
+
+  if (!root) {
+    load_crypto_definitions();
+  }
+
   char *auxLn;
 
   uint64_t start = 0;
@@ -93,3 +106,18 @@ API_EXPORT void find_crypto_algorithms(char *src, uint64_t src_ln,
       free(auxLn);
   }
 }
+
+/**
+ * @brief Cleanup section when library is unloaded.
+ *
+ */
+#if defined(_WIN32)
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+  if (fdwReason == DLL_PROCESS_DETACH) {
+    clean_crypto_definitions();
+  }
+  return TRUE;
+}
+#else
+__attribute__((destructor)) void deinit(void) { clean_crypto_definitions(); }
+#endif
